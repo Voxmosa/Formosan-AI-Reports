@@ -109,20 +109,21 @@ flowchart TD
    - **學術與工程依據**：印尼語同屬於南島語系（Austronesian languages），其音韻特徵、音節結構（CVC/CV）及羅馬拼音字母對應規則，與臺灣南島語言具備顯著同源親緣性。相比於隨機常態分佈初始化（Random Gaussian Initialization），以印尼語權重作為先驗起點，大幅加速了 Decoder 跨語言注意力層（Cross-Attention）的收斂效率。
 
 ### 4.3 損失函數與訓練策略
-- **微調損失**：本階段採用**標準 Seq2Seq 交叉熵損失（Cross-Entropy Loss）**，僅計算 Text Token 之預測損失：
+本階段採用**標準 Seq2Seq 交叉熵損失（Cross-Entropy Loss）**，僅計算 Text Token 之自回歸預測損失：
 
 $$
 \mathcal{L}_{\text{seq2seq}} = - \sum_{t=1}^{T} \log P(y_t \mid y_{<t}, \mathbf{X}, \text{prefix})
 $$
 
-- **LID Loss 策略說明**：本輪實驗**未加入語言識別多任務損失（No LID Loss）**，維持標準 Whisper Fine-tuning 流程，以評估在單純端到端辨識目標下，專屬 Token 搭配印尼語初始化的本質學習潛力。
+> **LID Loss 策略說明**：  
+> 本輪實驗**未加入語言識別多任務損失（No LID Loss）**，維持標準 Whisper Fine-tuning 流程，以評估在單純端到端辨識目標下，專屬 Token 搭配印尼語初始化的本質學習潛力。
 
 ---
 
 ## 5. 高訊噪比基準測試結果分析 (High SNR / Clean Benchmark)
 
 ### 5.1 評估指標說明
-- **Normalized CER（正規化字元錯誤率, %）**：本報告之主要核心評估指標。在計算前對模型輸出與 Ground Truth 進行標準文字正規化（移除首尾標點、統一大小寫、空白字符正規化），精確反映原住民族語羅馬拼音字母層級的編輯距離（Levenshtein Distance）：
+本報告之主要核心評估指標為 **Normalized CER（正規化字元錯誤率, %）**。在計算前對模型輸出與 Ground Truth 進行標準文字正規化（移除首尾標點、統一大小寫、空白字符正規化），精確反映原住民族語羅馬拼音字母層級的編輯距離（Levenshtein Distance）：
 
 $$
 \text{CER} = \frac{S + D + I}{N} \times 100\%
@@ -329,19 +330,20 @@ xychart-beta
 
 根據本階段評估成果，為持續推動族語 AI 實務應用與進一步提升邊緣案例表現，提出以下下一階段工程建議：
 
-1. **引入 Multi-task Language Identification (LID) Loss**：
-   - 在 Encoder 或 Decoder 頂層掛載輔助分類頭（Auxiliary Classification Head），加入 LID 損失：
+### 8.1 引入 Multi-task Language Identification (LID) Loss
+在 Encoder 或 Decoder 頂層掛載輔助分類頭（Auxiliary Classification Head），加入多任務 LID 損失：
 
 $$
 \mathcal{L}_{\text{total}} = \mathcal{L}_{\text{seq2seq}} + \lambda_{\text{lid}} \mathcal{L}_{\text{lid}}
 $$
 
-   - 藉此強化模型在無特定 Prompt 下自主偵測族語語言類型的能力，為後續即時逐字稿與語音翻譯建立前端語種路由。
-2. **高難度語言定向數據增強與重平衡採樣（Targeted Resampling & SpecAugment）**：
-   - 針對茂林魯凱語、卡群布農語、汶水泰雅語等 CER 偏高之語言，設計基於表現排名的動態採樣權重（Difficulty-aware Temperature Sampling）。
-   - 擴大運用時域遮罩（Time Masking）與頻率遮罩（Frequency Masking）進行資料擴增，強化稀缺音素之泛化能力。
-3. **整合輕量級前端語音增強模組（Speech Enhancement Front-end）**：
-   - 在邊緣設備部署前，可串接如 DTLN 或 Wave-U-Net 等輕量級去噪演算法，預先濾除背景環境音，將低 SNR 環境下的 CER 再度向下壓縮 1～2 個百分點。
-4. **模型輕量化與邊緣端推論加速（Edge Deployment & Quantization）**：
-   - 針對 Large-v2 模型進行 AWQ / INT8 / INT4 量化與 ONNX Runtime / TensorRT-LLM 轉換。
-   - 評估蒸餾（Distillation）至 Whisper Medium 或 Small 之可行性，以利部署於部落教室教學平板與離線嵌入式設備。
+藉此強化模型在無特定 Prompt 下自主偵測族語語言類型的能力，為後續即時逐字稿與語音翻譯建立前端語種路由。
+
+### 8.2 高難度語言定向數據增強與重平衡採樣 (Targeted Resampling & SpecAugment)
+針對茂林魯凱語、卡群布農語、汶水泰雅語等 CER 偏高之語言，設計基於表現排名的動態採樣權重（Difficulty-aware Temperature Sampling）。擴大運用時域遮罩（Time Masking）與頻率遮罩（Frequency Masking）進行資料擴增，強化稀缺音素之泛化能力。
+
+### 8.3 整合輕量級前端語音增強模組 (Speech Enhancement Front-end)
+在邊緣設備部署前，可串接如 DTLN 或 Wave-U-Net 等輕量級去噪演算法，預先濾除背景環境音，將低 SNR 環境下的 CER 再度向下壓縮 1～2 個百分點。
+
+### 8.4 模型輕量化與邊緣端推論加速 (Edge Deployment & Quantization)
+針對 Large-v2 模型進行 AWQ / INT8 / INT4 量化與 ONNX Runtime / TensorRT-LLM 轉換。評估蒸餾（Distillation）至 Whisper Medium 或 Small 之可行性，以利部署於部落教室教學平板與離線嵌入式設備。
