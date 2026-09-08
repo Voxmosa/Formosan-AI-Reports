@@ -110,7 +110,11 @@ flowchart TD
 
 ### 4.3 損失函數與訓練策略
 - **微調損失**：本階段採用**標準 Seq2Seq 交叉熵損失（Cross-Entropy Loss）**，僅計算 Text Token 之預測損失：
-  $$\mathcal{L}_{\text{seq2seq}} = - \sum_{t=1}^{T} \log P(y_t \mid y_{<t}, \mathbf{X}, \text{prefix})$$
+
+$$
+\mathcal{L}_{\text{seq2seq}} = - \sum_{t=1}^{T} \log P(y_t \mid y_{<t}, \mathbf{X}, \text{prefix})
+$$
+
 - **LID Loss 策略說明**：本輪實驗**未加入語言識別多任務損失（No LID Loss）**，維持標準 Whisper Fine-tuning 流程，以評估在單純端到端辨識目標下，專屬 Token 搭配印尼語初始化的本質學習潛力。
 
 ---
@@ -119,7 +123,11 @@ flowchart TD
 
 ### 5.1 評估指標說明
 - **Normalized CER（正規化字元錯誤率, %）**：本報告之主要核心評估指標。在計算前對模型輸出與 Ground Truth 進行標準文字正規化（移除首尾標點、統一大小寫、空白字符正規化），精確反映原住民族語羅馬拼音字母層級的編輯距離（Levenshtein Distance）：
-  $$\text{CER} = \frac{S + D + I}{N} \times 100\%$$
+
+$$
+\text{CER} = \frac{S + D + I}{N} \times 100\%
+$$
+
 - **Baseline 模型**：未經本計畫全語料微調之 Baseline Whisper Large-v2 模型測試結果。
 - **新模型（New Model）**：經 749 小時全族語語料微調後之 Whisper Large-v2 模型。
 
@@ -323,7 +331,11 @@ xychart-beta
 
 1. **引入 Multi-task Language Identification (LID) Loss**：
    - 在 Encoder 或 Decoder 頂層掛載輔助分類頭（Auxiliary Classification Head），加入 LID 損失：
-     $$\mathcal{L}_{\text{total}} = \mathcal{L}_{\text{seq2seq}} + \lambda_{\text{lid}} \mathcal{L}_{\text{lid}}$$
+
+$$
+\mathcal{L}_{\text{total}} = \mathcal{L}_{\text{seq2seq}} + \lambda_{\text{lid}} \mathcal{L}_{\text{lid}}
+$$
+
    - 藉此強化模型在無特定 Prompt 下自主偵測族語語言類型的能力，為後續即時逐字稿與語音翻譯建立前端語種路由。
 2. **高難度語言定向數據增強與重平衡採樣（Targeted Resampling & SpecAugment）**：
    - 針對茂林魯凱語、卡群布農語、汶水泰雅語等 CER 偏高之語言，設計基於表現排名的動態採樣權重（Difficulty-aware Temperature Sampling）。
