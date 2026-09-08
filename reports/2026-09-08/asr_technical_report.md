@@ -37,7 +37,7 @@ flowchart TD
 
     subgraph ModelArchitecture [模型架構與微調]
         Base[Whisper Large-v2] --> AddTokens[擴充 42 種語言專屬 Language Tokens]
-        Init[Indonesian <|id|> Embedding] --> AddTokens
+        Init["印尼語 (id) Token 嵌入層初始化"] --> AddTokens
         AddTokens --> Train[Cross-Entropy Fine-tuning]
         TrainSet --> Train
     end
@@ -225,7 +225,7 @@ flowchart TD
 
 ```mermaid
 xychart-beta
-    title "各語群在不同訊噪比 (Clean -> 15dB -> 10dB) 之加權 CER 退化走勢 (%)"
+    title "各語群在不同訊噪比 (Clean 至 15dB 至 10dB) 之加權 CER 退化走勢 (%)"
     x-axis ["阿美語群", "泰雅語群", "排灣語群", "布農語群", "卑南語群", "魯凱語群", "賽德克/太魯閣語群", "其他語群"]
     y-axis "加權 CER (%)" 0 --> 9
     bar [1.11, 1.63, 2.14, 2.84, 0.80, 3.82, 2.44, 1.97]
