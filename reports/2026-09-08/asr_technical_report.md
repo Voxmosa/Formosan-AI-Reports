@@ -107,6 +107,9 @@ flowchart TD
 2. **嵌入層初始化（Indonesian `<|id|>` Initialization）**：
    - 新增的 42 個 Language Token 嵌入向量，**全數以印尼語（Indonesian, `<|id|>`) 的 Embedding 向量權重進行初始化**。
    - **學術與工程依據**：印尼語同屬於南島語系（Austronesian languages），其音韻特徵、音節結構（CVC/CV）及羅馬拼音字母對應規則，與臺灣南島語言具備顯著同源親緣性。相比於隨機常態分佈初始化（Random Gaussian Initialization），以印尼語權重作為先驗起點，大幅加速了 Decoder 跨語言注意力層（Cross-Attention）的收斂效率。
+3. **推論部署與使用方式差異（需指定 Language Tag）**：
+   - **上一期 Baseline 模型（Universal 模式）**：未為各語言建立獨立專屬的 Language Tag，屬於通用型架構，在推論與調用時**無需指定語言代碼**即可直接進行轉錄。
+   - **本期新微調模型（Language Tag 導流模式）**：為了解決跨語言拼寫混淆並精確鎖定各語言音素分佈，模型引入了專屬語言標籤進行解碼導流。因此在**實務部署與調用推論時，使用者或應用系統必須預先設定並輸入對應的 `language tag`（例如指定 `language="ami-x-pswl"`）**，方能正確啟動對應族語的解碼先驗。
 
 ### 4.3 損失函數與訓練策略
 本階段採用**標準 Seq2Seq 交叉熵損失（Cross-Entropy Loss）**，僅計算 Text Token 之自回歸預測損失：
@@ -357,9 +360,13 @@ xychart-beta
 - **魯凱語群之茂林、萬山、多納（下三社）**：CER 相對其他族群較高（茂林 8.64%、萬山 3.11%、多納 3.41%）。主要原因在於下三社魯凱語具有特殊的齒間音、聲門塞音、長輔音及音調現象，在拼音標準化與標註一致性上面臨較高挑戰。
 - **布農語卡群 (`bnn-x-bkh`)**：Clean CER 為 5.18%，在布農語群中相對最高。此語言聲門音與送氣/不送氣對比複雜，未來需增補田野發音樣本以補足聲學多樣性。
 
-### 7.4 未加入 LID Loss 的利弊分析
-- **優勢**：損失函數結構單純，梯度專注於語音到文本序列的自回歸生成，訓練過程平穩，推理時無需額外分流判定計算。
-- **潛在不足**：在無顯式語種識別損失的約束下，模型高度依賴前綴 Prefix Token 進行強制導流。在極罕見的自由對話（Code-switching）或跨語言切換情境下，若未提供明確 Prompt，模型自主判定語言類型的能力仍有提升空間。
+### 7.4 語言標籤（Language Tag）部署模式與未加入 LID Loss 之利弊分析
+- **部署與推論模式演進**：
+  - **上一期 Baseline 模型（Universal 模式）**：採用單一通用的解碼空間，推論時無需輸入任何語言標籤即可直接辨識。然而，在面臨跨語言相似音素或詞彙時，通用模式較容易產生跨族語拼讀混淆與正詞法漂移。
+  - **本期新微調模型（Language Tag 導流模式）**：為了解決多語言間的聲學與正詞法衝突，新增 42 個專屬語言標籤。在實務部署與調用推論時，**使用者或應用系統必須明確預先設定對應的 `language tag`**（例如指定 `language="ami-x-pswl"`）。此架構雖在調用端增加了一道指定語言的設定步驟，但能為 Decoder 提供極為精確的語言先驗約束，是本期模型 CER 顯著下降、拼寫穩定度大幅提升的核心關鍵。
+- **未加入 LID Loss 之技術利弊**：
+  - **優勢**：訓練目標完全聚焦於語音到文本序列的自回歸解碼，損失函數單純且梯度平穩，收斂效率高；在指定 Language Tag 後，解碼路徑直接且確定。
+  - **邊界與限制**：在無顯式語種識別損失（LID Loss）約束下，模型無法在「完全不提供 Language Tag」的盲測條件下自動判定輸入音檔所屬族語；若使用者未指定或指定錯誤的語言標籤，可能導致解碼偏差。
 
 ---
 
@@ -367,14 +374,16 @@ xychart-beta
 
 根據本階段評估成果，為持續推動族語 AI 實務應用與進一步提升邊緣案例表現，提出以下下一階段工程建議：
 
-### 8.1 引入 Multi-task Language Identification (LID) Loss
+### 8.1 引入 Multi-task Language Identification (LID) Loss 與免標籤自動路由
 在 Encoder 或 Decoder 頂層掛載輔助分類頭（Auxiliary Classification Head），加入多任務 LID 損失：
 
 $$
 \mathcal{L}_{\text{total}} = \mathcal{L}_{\text{seq2seq}} + \lambda_{\text{lid}} \mathcal{L}_{\text{lid}}
 $$
 
-藉此強化模型在無特定 Prompt 下自主偵測族語語言類型的能力，為後續即時逐字稿與語音翻譯建立前端語種路由。
+藉此兼顧「專屬語言標籤的高精準度」與「上一期 Universal 模型免指定標籤的便利性」：
+1. **前端自動語種偵測**：音訊輸入後，模型可自主預測最可能的語言代碼（Top-1 LID），自動完成內部導流。
+2. **多語言混合對話與即時逐字稿**：在未知講者族語類別或雙語交替（Code-switching）的情境下，提供更直覺的免設定轉錄體驗。
 
 ### 8.2 高難度語言定向數據增強與重平衡採樣 (Targeted Resampling & SpecAugment)
 針對茂林魯凱語、卡群布農語、汶水泰雅語等 CER 偏高之語言，設計基於表現排名的動態採樣權重（Difficulty-aware Temperature Sampling）。擴大運用時域遮罩（Time Masking）與頻率遮罩（Frequency Masking）進行資料擴增，強化稀缺音素之泛化能力。
