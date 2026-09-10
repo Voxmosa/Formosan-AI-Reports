@@ -1,8 +1,8 @@
 # 臺灣原住民族語 AI 計畫：非紅產業鏈語音合成（TTS）模型微調可行性與表現力（Emotion / Prosody / SFX）保留度研究報告
 
 > **專案名稱**：臺灣原住民族語 AI 計畫 (Formosan AI Project)  
-> **主導單位**：意傳科技 (Voxmosa / Ithuan)  
-> **執行單位**：牧仁資訊 (Muren Info)  
+> **主導單位**：意傳科技  
+> **執行單位**：牧仁資訊  
 > **報告日期**：2026-09-08  
 > **核心主題**：基於非紅產業鏈大模型 `bosonai/higgs-tts-3-4b` 之全族語語音合成微調可行性驗證、聲學指標對比與情境表現力（情緒 Emotion、韻律 Prosody、音效 Sound Effects）保留度深度評估  
 
