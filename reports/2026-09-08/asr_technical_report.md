@@ -433,7 +433,22 @@ xychart-beta
 
 ## 8. 後續優化建議與未來工作規劃 (Recommendations & Next Steps)
 
-根據本階段評估成果，為持續推動族語 AI 實務應用與進一步提升邊緣案例表現，提出以下下一階段工程建議：
+根據本階段評估成果與工程實證發現，為持續推動臺灣原住民族語 AI 實務落地應用、解決跨語言調用瓶頸並進一步提升邊緣案例表現，團隊提出「**四大核心工程技術升級**」與「**三大語言數據與實務落地規劃**」：
+
+```mermaid
+flowchart TD
+    subgraph S1 ["四大核心工程技術升級 (Engineering Upgrades)"]
+        T1["8.1 多任務 LID 自動路由<br/>Multi-task LID & Auto-Routing"]
+        T2["8.2 線上雜訊增強與重平衡採樣<br/>Noise Augmentation & Temperature Sampling"]
+        T3["8.3 前端輕量語音增強模組<br/>Speech Enhancement Front-end (DTLN)"]
+        T4["8.4 邊緣端量化與離線推論加速<br/>Quantization & Distillation (Edge Offline)"]
+    end
+    subgraph S2 ["三大語言數據與實務落地規劃 (Linguistics & Deployment)"]
+        P1["8.5 語料文字正規化管線<br/>Text Normalization & Transcription Standards"]
+        P2["8.6 瀕危語言定向田調增補<br/>Targeted Oral Corpus Expansion"]
+        P3["8.7 跨領域多元實務落地部署<br/>E-learning / TITV / Cultural Archiving"]
+    end
+```
 
 ### 8.1 引入 Multi-task Language Identification (LID) Loss 與免標籤自動路由
 在 Encoder 或 Decoder 頂層掛載輔助分類頭（Auxiliary Classification Head），加入多任務 LID 損失：
@@ -443,8 +458,8 @@ $$
 $$
 
 藉此兼顧「專屬語言標籤的高精準度」與「上一期 Universal 模型免指定標籤的便利性」：
-1. **前端自動語種偵測**：音訊輸入後，模型可自主預測最可能的語言代碼（Top-1 LID），自動完成內部導流。
-2. **多語言混合對話與即時逐字稿**：在未知講者族語類別或雙語交替（Code-switching）的情境下，提供更直覺的免設定轉錄體驗。
+1. **前端自動語種偵測**：音訊輸入後，模型可自主預測最可能的語言代碼（Top-1 LID），自動完成內部導流，免除使用者或系統手動設定語言標籤的門檻。
+2. **多語言混合對話與即時逐字稿**：在未知講者族語類別或族語與華語雙語交替（Code-switching）的情境下，提供更直覺且魯棒的自動切換轉錄體驗。
 
 ### 8.2 導入線上雜訊資料增強 (Noise Data Augmentation) 與重平衡採樣
 鑑於本期模型微調未施加額外雜訊增強即已具備優異的零樣本抗噪能力，下一階段建議正式導入線上動態資料增強機制：
@@ -452,7 +467,24 @@ $$
 2. **高難度語言定向增強 (SpecAugment & Resampling)**：針對茂林魯凱語、卡群布農語、汶水泰雅語等 CER 偏高之語言，設計基於表現排名的動態採樣權重（Difficulty-aware Temperature Sampling），並擴大運用時域與頻率遮罩，強化稀缺音素之聲學表徵。
 
 ### 8.3 整合輕量級前端語音增強模組 (Speech Enhancement Front-end)
-在邊緣設備部署前，可串接如 DTLN 或 Wave-U-Net 等輕量級去噪演算法，預先濾除背景環境音，將低 SNR 環境下的 CER 再度向下壓縮 1～2 個百分點。
+在邊緣設備部署前，可串接如 DTLN 或 Wave-U-Net 等輕量級去噪演算法，預先濾除背景環境音與電風扇底噪，將低 SNR 環境下的 CER 再度向下壓縮 1～2 個百分點。
 
 ### 8.4 模型輕量化與邊緣端推論加速 (Edge Deployment & Quantization)
-針對 Large-v2 模型進行 AWQ / INT8 / INT4 量化與 ONNX Runtime / TensorRT-LLM 轉換。評估蒸餾（Distillation）至 Whisper Medium 或 Small 之可行性，以利部署於部落教室教學平板與離線嵌入式設備。
+針對 Large-v2 模型進行 AWQ / INT8 / INT4 量化與 ONNX Runtime / TensorRT-LLM 轉換。評估知識蒸餾（Distillation）至 Whisper Medium 或 Small 之可行性，將參數量縮小 3～5 倍，以利部署於偏鄉部落學校教學平板、文化健康站觸控機台與無網路深山之離線嵌入式設備。
+
+### 8.5 建立語料文字正規化與拼寫標準化管線 (Text Normalization Pipeline)
+目前四大語料庫之文字標記主要源自官方教材與辭典，整體品質良好，但因歷年正詞法演進與不同方音拼寫差異，偶有標點、大小寫、連字號及重音符號分歧現象：
+1. **跨年代標註清洗規則庫**：邀集各族語言專家與原語會共同研擬統一的文字正規化規則庫（包含連字符歸一、聲門音統一表記、大小寫與母音標記對照）。
+2. **預期效益**：消除因文字標記表面不一致所造成的假性辨識失誤，預期可使模型評估 CER/WER 進一步降低 10%～20%。
+
+### 8.6 高難度與極低資源瀕危語言之田野口述定向增補 (Targeted Oral Corpus Expansion)
+針對本次評估中錯誤率相對偏高或極度瀕危之語言別（如茂林魯凱語 8.64%、萬山魯凱語 3.11%、汶水泰雅語 2.99%、卡群布農語 5.18%），展開定向資料增補：
+1. **增加真實口語語篇**：優先挹注資源採集耆老日常長篇對話、部落文史傳說與歌謠口述，彌補單純單詞教材缺乏韻律與連續變音特徵的缺憾。
+2. **平衡訓練樣本分佈**：將總時長未滿 10 小時之極低資源語言擴充至 20 小時以上，提升聲學模型在少見音素上的泛化能力。
+
+### 8.7 跨領域多元實務落地應用部署 (Public Service & Community Deployment Scenarios)
+將現有成熟的高準確度 ASR 模型推向多元公部門與文化場景：
+1. **族語教育智慧評測**：串接族語 E 樂園，提供學生課堂朗讀與口說對話之即時語音打分、音素診斷與學習回饋。
+2. **影音新聞自動轉寫與上字幕**：支援原住民族電視台（TITV）與公廣集團之族語訪談節目、紀錄片即時生成多語字幕，大幅縮減人工聽寫校對時程。
+3. **部落文化健康站耆老口述歷史典藏**：加速部落長老文史田調錄音之數位化轉錄與文字化建檔，保存珍貴原住民族非物質文化遺產。
+4. **智慧部落多語導覽機**：部署於原鄉文化園區、公所服務台與智慧站牌，提供長者與訪客族語語音查詢與互動服務。
