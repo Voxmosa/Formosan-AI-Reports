@@ -17,16 +17,16 @@
 
 ```mermaid
 flowchart TD
-    subgraph S1 [戰略技術選型]
+    subgraph S1 ["戰略技術選型"]
         A1["擺脫中國開源模型依賴<br/>(符合主權 AI 與資安規範)"]
         A2["引進美國矽谷 40 億參數大模型<br/>(bosonai/higgs-tts-3-4b)"]
         A1 --> A2
     end
-    subgraph S2 [第一輪初步微調成果 Step 6000]
+    subgraph S2 ["第一輪初步微調成果 Step 6000"]
         B1["發音精準度 (CER)<br/><b>6.33%</b><br/>(初步適應 42 族語發音)"]
         B2["說話者聲音相似度<br/><b>0.590</b><br/>(成功克隆目標音色)"]
     end
-    subgraph S3 [三大情境表現力實測結論]
+    subgraph S3 ["三大情境表現力實測結論"]
         C1["韻律與語速 (Prosody)<br/><b>⭕ 成功保留</b><br/>(放慢語速清晰平穩，適合教學)"]
         C2["情緒控制 (Emotion)<br/><b>❌ 暫時消失</b><br/>(教材皆為平穩朗讀，產生遺忘)"]
         C3["擬聲與音效 (SFX)<br/><b>❌ 無法觸發</b><br/>(族語缺乏象聲詞對齊標籤)"]

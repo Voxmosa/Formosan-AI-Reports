@@ -17,15 +17,15 @@
 
 ```mermaid
 flowchart LR
-    subgraph S1 [平時安靜環境 Clean]
+    subgraph S1 ["平時安靜環境 Clean"]
         C1["加權字元錯誤率 (CER)<br/><b>2.77% ➔ 2.12%</b><br/>(相對改善 23.6%)"]
         W1["加權單詞錯誤率 (WER)<br/><b>10.01% ➔ 7.37%</b><br/>(相對改善 26.4%)"]
     end
-    subgraph S2 [吵雜生活環境 SNR 10dB]
+    subgraph S2 ["吵雜生活環境 SNR 10dB"]
         C2["加權字元錯誤率 (CER)<br/><b>5.19% ➔ 4.37%</b><br/>(相對改善 15.8%)"]
         W2["加權單詞錯誤率 (WER)<br/><b>17.86% ➔ 14.85%</b><br/>(相對改善 16.8%)"]
     end
-    subgraph S3 [涵蓋率與突破]
+    subgraph S3 ["涵蓋率與突破"]
         P1["<b>40 / 42 語言</b> CER 進步<br/><b>41 / 42 語言</b> WER 進步"]
         P2["南勢阿美語錯誤率驟降 87%<br/>茂林魯凱語錯誤率下降 42%"]
     end
@@ -100,10 +100,10 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-    subgraph OldModel [上一期 Baseline 模型: 通用 Universal 模式]
+    subgraph OldModel ["上一期 Baseline 模型：通用 Universal 模式"]
         In1["輸入語音 (無語言標籤)"] --> Enc1["模型編碼器"] --> Dec1["共用同一個解碼器<br/>(容易產生跨族語拼音混淆)"]
     end
-    subgraph NewModel [本期新模型: 專屬身分證 Language Tag 模式]
+    subgraph NewModel ["本期新模型：專屬身分證 Language Tag 模式"]
         In2["輸入語音 + 指定 Language Tag<br/>(例如: &lt;|ami-x-pswl|&gt;)"] --> Enc2["模型編碼器"] --> Init["以印尼語 &lt;|id|&gt; 向量權重初始化<br/>(同屬南島語系，發音結構親緣相近)"] --> Dec2["精準導流至對應族語<br/>(發音規則明確，辨識大幅提升)"]
     end
 ```
@@ -284,13 +284,13 @@ xychart-beta
 
 ```mermaid
 flowchart TD
-    subgraph Tech [四大前瞻技術升級方向 (工程面)]
+    subgraph Tech ["四大前瞻技術升級方向（工程面）"]
         T1["1. 免選語言自動辨識 (LID)<br/>音訊輸入自動判斷語種，雙語混講也能通"]
         T2["2. 動態人工雜音加強特訓<br/>混入戶外風雨聲，並對高難度語言加倍練習"]
         T3["3. 前端輕量除噪濾鏡 (Speech Enhancement)<br/>手機平板端先濾除電風扇與底噪"]
         T4["4. 模型瘦身與離線化 (Edge Offline)<br/>無網路偏鄉深山也能在平板上即時聽寫"]
     end
-    subgraph Policy [三大文化落地推動方向 (政策面)]
+    subgraph Policy ["三大文化落地推動方向（政策面）"]
         P1["1. 文字標記規範化 (Normalization)<br/>梳理統一拼寫與標點，準確度再升 10~20%"]
         P2["2. 瀕危弱勢語言口述補強<br/>為茂林魯凱、汶水泰雅等增補真實生活對話"]
         P3["3. 多領域多元落地應用<br/>E樂園口說評量 / 原民台字幕 / 文健站長老典藏"]
