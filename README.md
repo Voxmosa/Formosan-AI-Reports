@@ -2,7 +2,8 @@
 
 [![Languages](https://img.shields.io/badge/Languages-16%20Ethnic%20Groups%20%2F%2042%20Dialects-blue.svg)](lang_code_map.json)
 [![ASR Model](https://img.shields.io/badge/ASR%20Model-Whisper%20Large--v2-orange.svg)](reports/2026-09-08/asr_technical_report.md)
-[![TTS Model](https://img.shields.io/badge/TTS%20Model-Higgs--TTS--3--4B%20(Boson%20AI)-red.svg)](reports/2026-09-08/tts_research_report.md)
+[![TTS Model](https://img.shields.io/badge/TTS%20Model-Chatterbox%20Multilingual%20V3%20(Resemble%20AI)-brightgreen.svg)](reports/2026-10-20/tts_technical_report.md)
+[![TTS CER](https://img.shields.io/badge/TTS%20CER-1.83%25%20(vs%20GT%201.88%25)-blue.svg)](reports/2026-10-20/tts_technical_report.md)
 [![Clean CER](https://img.shields.io/badge/Clean%20Weighted%20CER-2.12%25%20(-23.6%25)-brightgreen.svg)](reports/2026-09-08/asr_technical_report.md)
 [![Training Corpus](https://img.shields.io/badge/Training%20Corpus-781%2B%20hrs%20%2F%20611k%20samples-purple.svg)](data/2026-09-08/stats-klokah.md)
 
@@ -53,6 +54,8 @@
 
 | 報告日期 | 領域類別 | 報告標題 | 核心內容摘要 | 完整報告連結 |
 | :--- | :---: | :--- | :--- | :--- |
+| **2026-10-20** | **TTS 語音合成 (簡報版)** | **非紅產業鏈語音合成（TTS）Chatterbox 模型成果報告（原語會簡報版）** | 專為原語會長官與推動同仁編撰之簡報版。深入淺出解析 Chatterbox 發音錯誤率（1.83%）擊敗真人錄音之原因、徹底根治男女聲突變之實務效益，以及三大業務落地場景。 | [檢視報告 (Markdown)](reports/2026-10-20/tts_simplified_report.md) |
+| **2026-10-20** | **TTS 語音合成 (技術版)** | **非紅產業鏈語音合成（TTS）Chatterbox 模型全族語微調與聲學評估技術報告** | 基於北美非紅架構 `ResembleAI/chatterbox`（Multilingual T3），微調 740.9 小時族語資料，CER 突破至 **1.83%**（超越真實錄音 1.88%），UTMOS 達 **2.88**，並徹底解決性別與基頻崩塌缺陷。 | [檢視報告 (Markdown)](reports/2026-10-20/tts_technical_report.md) |
 | **2026-09-08** | **TTS 語音合成 (簡報版)** | **非紅產業鏈語音合成（TTS）研究成果報告（原語會簡報版）** | 專為原語會長官與同仁撰寫之簡報版。深入淺出解析引進非紅大模型之戰略意義、四大工程、三大表現力（情緒、韻律語速、音效）實測結論與後續解方，保留完整圖表。 | [檢視報告 (Markdown)](reports/2026-09-08/tts_simplified_report.md) |
 | **2026-09-08** | **TTS 語音合成 (技術版)** | **非紅產業鏈語音合成（TTS）模型微調可行性與表現力（Emotion / Prosody / SFX）保留度研究報告** | 測試以非紅大模型 `bosonai/higgs-tts-3-4b` 進行 LoRA 微調，結合新增國網中心語料庫，評估 42 語言發音準確度、WavLM 聲紋相似度與情緒/韻律/音效可控性保留度。 | [檢視報告 (Markdown)](reports/2026-09-08/tts_research_report.md) |
 | **2026-09-08** | **ASR 語音辨識 (簡報版)** | **全族語語音辨識（ASR）模型成果報告（原語會簡報版）** | 專為原語會長官與同仁撰寫之簡報版。深入淺出解析模型訓練四大核心工程（語料整併、音訊預處理、Language Tag 身分證、獨立大考）、成績對比（平時與吵雜環境）與原因分析，保留完整圖表。 | [檢視報告 (Markdown)](reports/2026-09-08/asr_simplified_report.md) |
@@ -161,10 +164,15 @@ Formosan-AI-Reports/
 ├── README.md                     # 專案總覽與導引說明 (本文件)
 ├── lang_code_map.json            # 42 種臺灣原住民族語標準代碼與中文名稱對照表
 ├── reports/                      # 各期詳細技術評估報告
+│   ├── 2026-10-20/
+│   │   ├── tts_simplified_report.md # 非紅 Chatterbox 成果報告 (原語會簡報版)
+│   │   └── tts_technical_report.md  # 非紅產業鏈 Chatterbox 全族語微調與聲學評估報告
 │   └── 2026-09-08/
 │       ├── asr_technical_report.md  # 全族語 ASR 模型微調與抗噪評估完整報告
 │       └── tts_research_report.md  # 非紅產業鏈 TTS 模型微調與表現力評估研究報告
 └── data/                         # 歷次實驗原始數據與統計資料
+    ├── 2026-10-20/
+    │   └── results-chatterbox.csv # Chatterbox 全族語微調評估明細 (CER / SIM / UTMOS)
     └── 2026-09-08/
         ├── results-clean.csv     # 42 語言高訊噪比 Clean 評估明細 (CER / WER)
         ├── results-noisy.csv     # 42 語言低訊噪比 (SNR 15dB, 10dB) 抗噪評估明細
