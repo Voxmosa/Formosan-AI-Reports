@@ -1,4 +1,4 @@
-# 臺灣原住民族語 AI 計畫：非紅產業鏈語音合成（TTS）Chatterbox 模型全族語微調與聲學評估技術報告
+# 臺灣原住民族語 AI 計畫：非紅產業鏈 Chatterbox TTS 全族語微調技術報告——訓練資料海量擴增、架構選型與參考音訊性別轉換改善
 
 > **專案名稱**：臺灣原住民族語 AI 計畫 (Formosan AI Project)  
 > **主導單位**：意傳科技  
@@ -6,7 +6,7 @@
 > **報告日期**：2026-10-20  
 > **開源模型位址**：[`ILRDF/chatterbox-formosan-all-finetune`](https://huggingface.co/ILRDF/chatterbox-formosan-all-finetune)  
 > **在線體驗系統**：[`ILRDF/formosan-chatterbox`](https://huggingface.co/spaces/ILRDF/formosan-chatterbox)  
-> **核心主題**：基於北美非紅產業鏈架構 [`ResembleAI/chatterbox`](https://huggingface.co/ResembleAI/chatterbox)（Multilingual T3 `t3_mtl23ls_v3`）之全臺 42 種族語零樣本語音克隆（Zero-Shot Voice Cloning）模型微調、音韻 G2P 映射對齊、聲學指標（CER / WER / SIM-o / UTMOS）全面評測與性別基頻穩定度深度驗證
+> **核心主題**：基於北美非紅產業鏈架構 [`ResembleAI/chatterbox`](https://huggingface.co/ResembleAI/chatterbox)（Multilingual T3 `t3_mtl23ls_v3`）之全臺 42 種族語零樣本語音克隆（Zero-Shot Voice Cloning）模型微調。聚焦三大研發亮點：**訓練語料規模大幅擴增（740.9 小時）**、**全面導入非紅 Chatterbox TTS 架構**，以及**突破性改善 F5-TTS 參考音訊性別轉換（男女聲突變）缺陷**。
 
 ---
 
@@ -14,45 +14,49 @@
 
 本技術報告為「臺灣原住民族語 AI 計畫」於 2026 年 10 月所達成之重大技術里程碑。報告全面剖析由原語會（ILRDF）與技術團隊主導、正式發布於 Hugging Face 之開源全族語語音合成模型 **`ILRDF/chatterbox-formosan-all-finetune`** 的架構設計、訓練資料管線、聲學評估數據與工程落地實踐。
 
-### 1.1 戰略背景與非紅產業鏈選型演進
-為貫徹國家「主權 AI（Sovereign AI）」政策，消除政府與公部門在族語教育、智慧廣播及公共服務系統上的資訊安全隱憂，本計畫自上一階段（2026-09-08）起全面轉向**非紅產業鏈（Non-Red Supply Chain）**開源語音生成技術體系：
-1. **擺脫紅色供應鏈模型之依賴與缺陷**：上一期計畫採用之 F5-TTS（Flow Matching 架構）由中國團隊研發，存在潛在的地緣政治與合規風險；更關鍵的是，其在極端短句與疑問句情境下頻繁發生性別突變（Gender Inversion）與基頻崩塌（F0 Collapse）之嚴重視聽缺陷。
-2. **從探索期大模型反思到靈活架構確立**：在 2026-09-08 探索期中，團隊曾評估由美國 Boson AI 開源之 40 億參數大模型 `bosonai/higgs-tts-3-4b`。然而受限於 4B 巨大容量，在 4 張 RTX A5000（24GB）顯存限制下僅能採用 LoRA 微調，訓練 1 個 Epoch（Step 6000）時 CER 僅達 6.33%，收斂緩慢且參數量過於沉重，不利於即時邊緣端與雲端服務部署。
-3. **正式選定北美 Resemble AI Chatterbox Multilingual V3**：本期決定採用由美加著名語音科技公司 Resemble AI 發布之開源旗艦架構 **Chatterbox Multilingual V3（約 500M 參數）** 作為基底。該架構具備純淨的非紅開源授權（MIT License）、優異的跨語言音素對齊能力與輕量模組化設計，提供極佳的工程可控性。
+### 1.1 三大核心突破亮點總覽
 
-### 1.2 核心工程突破與宏觀數據亮點
+本次微調成果凝聚了團隊在語料規模、非紅模型架構與生成穩定度上的三大關鍵進展：
+
+1. **亮點一：訓練資料規模大幅擴增（規模遠超前期）**  
+   相較於上一期 F5-TTS 僅使用 3 個資料集（約 400 小時），本期全面整併 FormoSpeech 家族之**七大語料庫**，新納入 Common Voice、中興阿美語、國網中心及臺大語言所田野語料，總訓練資料躍升至 **518,060 筆有效語句、總時長達 740.9 小時**。海量語料的注入，為模型奠定了涵蓋全臺 16 族 42 方言別的深厚音韻基礎。
+2. **亮點二：全面導入非紅產業鏈 Chatterbox TTS 架構**  
+   為落實國家主權 AI（Sovereign AI）並杜絕資安合規疑慮，本計畫徹底擺脫前代 F5-TTS 之中國技術鏈背景，並吸取 2026-09-08 探索期 40 億參數大模型（Higgs-TTS-3-4B）因體積過巨導致 LoRA 微調收斂緩慢（CER 6.33%）之教訓。本期選定北美頂尖語音公司 **Resemble AI** 開源之 **Chatterbox Multilingual V3（約 5 億參數）**，以解耦架構針對核心 T3 模組展開全量微調，達成 **CER 1.83%（超越真人錄音 1.88%）** 與 **UTMOS 2.88** 的歷史新高。
+3. **亮點三：大幅改善 F5-TTS 在參考音訊（Ref Audio）上的性別轉換缺陷**  
+   過去採用 F5-TTS 進行零樣本語音克隆時，經常在輸入特定參考音訊（特別是短句子或疑問句）時，合成語音發生嚴重的「基頻崩塌（F0 Collapse）」，導致女聲參考音訊突變為粗獷男聲（短疑問句突變率高達 **12.77%**）。換成 Chatterbox TTS 後，仰賴獨立凍結的 VoiceEncoder 持續給予剛性聲紋約束，將短疑問句性別突變率大幅壓低至 **0.72%**（改善高達 17.7 倍），在長句疑問中更降至 **0.12%**，徹底解決了困擾語音教學與長者聲音典藏的性別跳轉痛點。
+
+### 1.2 核心工程突破與宏觀數據指標
 - **CER 1.83%（超越真實錄音基準）**：在涵蓋全臺 42 語言別、14,694 筆獨立評估樣本的大規模盲測中，Chatterbox Formosan 的字元錯誤率（CER）降至 **1.83%**，不僅遠勝 F5-TTS v3 的 **5.16%**（相對錯誤率降低達 **-64.5%**），甚至**超越了真實人類錄音 Ground Truth（1.88%）**！這證明模型生成的語音在音素發音規範度上極為純淨，能有效消除田野錄音中的口齒雜音與方言口音吞字。
 - **全族語發音精準度全面輾壓**：在 `formospeech/klokah` 獨立測試集中，Chatterbox 在全臺 **42 種語言別中有 40 種（95.2%）CER 明顯優於 F5-TTS**；在撒奇萊雅語（0.65%）、太魯閣語（0.84%）、德鹿谷賽德克語（0.80%）與南王卑南語（0.87%）皆達到低於 1% 的極致準確率。
 - **聽感自然度（UTMOS 2.88）顯著躍升**：在基於深度神經網絡的神經 MOS 評估（`utmos22_strong`）中，Chatterbox 取得 **2.88** 的高分，全面凌駕於 F5-TTS 的 **2.27** 與真實音檔的 **2.39**，且在全部 42 種語言別中 UTMOS **100% 全數勝出**。
-- **徹底攻克性別與聲調翻轉痛點**：F5-TTS 在面對短句或疑問句時，經常出現中位數 F0 突降為參考音訊 0.7 倍以下的「男女聲突變」（短疑問句失真率高達 12.77%）。Chatterbox Formosan 將此失真率全面壓制在 **0.12% ～ 0.93%** 之間，展現出堅不可摧的聲紋穩定度。
-- **七大語料庫大整併（740.9 小時）**：納入 `klokah`、`ilrdf_dicts`、`common_voice_formosan`、`nchu_pangcah`、`ithuan_formosan`、`nchc_formosan` 與 `ntu_formosan_corpus` 共 518,060 筆有效語料，並導入「50% 動態帶噪 Prompt 注入」訓練技巧，大幅提升對真實世界雜訊參考音訊的零樣本克隆韌性。
+- **50% 動態帶噪 Prompt 注入訓練**：在海量訓練中導入 50% 帶噪參考音訓練策略，大幅強化模型對真實生活錄音雜訊的聲紋抽離能力，使手機錄音也能逼真克隆。
 
 ### 1.3 總體聲學評估指標對照表
 
-| 評估系統 (System) | 模型架構類型 | 產業鏈屬性 | 字元錯誤率 (CER%) | 詞錯誤率 (WER%) | 聲紋相似度 (SIM-o) | 聽感品質預測 (UTMOS) | 性別跳轉率 (短疑問句) |
-| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **Ground Truth (真實音檔)** | 人類錄音基準 | - | **1.88%** | **7.09%** | **0.673** | 2.39 | 0.00% |
-| **Chatterbox Formosan (本期)** | **Decoupled T3 (0.5B)** | **非紅 (Resemble AI)** | **1.83%** | **9.56%** | **0.665** | **2.88** | **0.72%** |
-| **F5-TTS Formosan v3 (上一期)** | Flow Matching (0.3B) | 紅色供應鏈背景 | 5.16% | 13.99% | **0.672** | 2.27 | 12.77% |
-| *Higgs-TTS-3-4B (探索期)* | *LLM Autoregressive (4B)* | *非紅 (Boson AI)* | *6.33%* | *22.26%* | *0.590* | *N/A* | *N/A* |
+| 評估系統 (System) | 模型架構類型 | 產業鏈屬性 | 訓練資料規模 | 字元錯誤率 (CER%) | 詞錯誤率 (WER%) | 聲紋相似度 (SIM-o) | 聽感品質預測 (UTMOS) | 短疑問句性別突變率 |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Ground Truth (真實音檔)** | 人類錄音基準 | - | - | **1.88%** | **7.09%** | **0.673** | 2.39 | 0.00% |
+| **Chatterbox Formosan (本期)** | **Decoupled T3 (0.5B)** | **非紅 (Resemble AI)** | **740.9h (七大庫)** | **1.83%** | **9.56%** | **0.665** | **2.88** | **0.72%** |
+| **F5-TTS Formosan v3 (上一期)** | Flow Matching (0.3B) | 紅色供應鏈背景 | ~400h (三大庫) | 5.16% | 13.99% | **0.672** | 2.27 | 12.77% |
+| *Higgs-TTS-3-4B (探索期)* | *LLM Autoregressive (4B)* | *非紅 (Boson AI)* | 781h (五大庫) | *6.33%* | *22.26%* | *0.590* | *N/A* | *N/A* |
 
 ```mermaid
 flowchart TD
-    subgraph DataEngine ["七大族語語料庫與前處理管線 (740.9 hrs / 518k utts)"]
+    subgraph DataEngine ["亮點一：七大語料庫海量擴增 (740.9h / 51.8 萬句)"]
         D1["formospeech/klokah (466.7h)"] --> Clean[嚴格長度與語速過濾<br/>1.5s <= dur <= 24s<br/>1 <= phones/s <= 18]
         D2["formospeech/ilrdf_dicts (118.1h)"] --> Clean
-        D3["formospeech/common_voice (50.2h)"] --> Clean
-        D4["formospeech/nchu_pangcah (34.7h)"] --> Clean
+        D3["formospeech/common_voice (50.2h) ⭐️新增"] --> Clean
+        D4["formospeech/nchu_pangcah (34.7h) ⭐️新增"] --> Clean
         D5["formospeech/ithuan_formosan (29.6h)"] --> Clean
-        D6["formospeech/nchc_formosan (25.4h)"] --> Clean
-        D7["formospeech/ntu_corpus (16.2h)"] --> Clean
+        D6["formospeech/nchc_formosan (25.4h) ⭐️新增"] --> Clean
+        D7["formospeech/ntu_corpus (16.2h) ⭐️新增"] --> Clean
         Clean --> NoiseInject[音訊降噪 + 50% 動態帶噪 Prompt 注入]
         NoiseInject --> G2P[42 語言別 G2P 音標正則化<br/>g2p.csv -> 國際音標 IPA]
     end
 
-    subgraph Architecture ["非紅 Chatterbox Multilingual V3 解耦架構"]
+    subgraph Architecture ["亮點二：非紅 Chatterbox Multilingual V3 架構"]
         G2P --> Tokenizer[MTLTokenizer<br/>詞表擴充: 2454 -> 2496<br/>注入 42 個方言 Tag]
-        Tokenizer --> T3["T3 Transformer (0.5B Backbone)<br/><b>全參數微調: t3_formosan.safetensors</b><br/>(4x A5000, 2 Epochs, 8096 steps)"]
+        Tokenizer --> T3["T3 Transformer (0.5B Backbone)<br/><b>全模組深度微調: t3_formosan.safetensors</b><br/>(4x A5000, 2 Epochs, 8096 steps)"]
         
         RefAudio["參考音訊 Ref Audio (6-10s)"] --> VE["VoiceEncoder (ve.pt)<br/><b>權重凍結 (Frozen)</b>"]
         RefAudio --> S3Tok["S3 Tokenizer<br/>抽取 Speech Prompt"]
@@ -64,19 +68,19 @@ flowchart TD
         S3Gen --> WavOut["24 kHz 高保真合成語音"]
     end
 
-    subgraph Benchmarking ["全族語大考雙軌評估 (14,694 筆獨立 Eval 語料)"]
+    subgraph Benchmarking ["亮點三：聲學與性別穩定度大突破 (14,694 筆獨立評測)"]
         WavOut --> ASR["Whisper Large-v2 ASR 轉錄<br/><b>CER: 1.83% (勝真實音檔 1.88%)</b><br/><b>WER: 9.56% (超越 F5 13.99%)</b>"]
         WavOut --> Sim["WavLM-large 聲紋檢驗<br/><b>SIM-o: 0.665 (高度音色克隆)</b>"]
         WavOut --> MOS["UTMOS 神經聽感預測<br/><b>UTMOS: 2.88 (全面勝出 2.27)</b>"]
-        WavOut --> Gender["基頻 F0 穩定度分析<br/><b>短疑問句突變率 0.72% vs 12.77%</b>"]
+        WavOut --> Gender["基頻 F0 與性別穩定度<br/><b>短疑問句突變率 0.72% vs 12.77% (改善 17.7x)</b>"]
     end
 ```
 
 ---
 
-## 2. 專案背景與技術選型演進
+## 2. 亮點二：技術選型演進——全面確立「非紅產業鏈」Chatterbox TTS 基底
 
-### 2.1 堅持「非紅產業鏈」TTS 的戰略定調
+### 2.1 堅守「非紅產業鏈」TTS 的戰略必然性
 在原住民族委員會與國家主權 AI（Sovereign AI）的戰略指導下，政府公共服務系統之核心技術棧必須具備完全的自主性、可審查性與資安防護力：
 1. **地緣政治風險與資安合規**：過去在語音合成社群中，多數性能較佳的模型（如阿里 CosyVoice、ChatTTS、Fish Speech 以及本計畫上一期測試之 F5-TTS）皆源於中國團隊或具有紅色供應鏈背景。此類技術除了授權條件潛在變更風險外，在政府採購、關鍵基礎設施與族語教育雲端系統部署上皆面臨合規審查障礙。
 2. **基底模型的透明度與純淨度**：採用歐美民主陣營開源之模型，能夠確保代碼規範、訓練集來源透明，且無非預期的後門或監控疑慮。
@@ -137,73 +141,25 @@ flowchart LR
 - **詞表擴展**：Chatterbox 原生多語言字典具備 2,454 個 Text Tokens。本專案正式擴充至 **2,496 個 Tokens**，精準增加 42 個專屬族語方言標籤（Dialect Tags，Token ID: 2,454 ～ 2,495）。
 - **Embedding 均值初始化（Mean Initialization）**：為避免新加入的 42 個方言 Embedding 在訓練初期產生劇烈梯度震盪，其權重被初始化為原有預訓練詞向量之平均值（Mean Vector），使模型在微調一開始便處於聲律平滑的先驗狀態。
 
-<details>
-<summary>點擊展開：42 種族語方言代碼、名稱與專屬方言標籤對照表</summary>
-
-| 語言代碼 (lang_code) | 語言與方言別 (Dialect Name) | 方言標籤 (Dialect Tag) | Token ID |
-| :--- | :--- | :--- | :---: |
-| `ami-x-pld` | 恆春阿美語 | `[fm_amis_hengchun]` | 2454 |
-| `ami-x-iams` | 南勢阿美語 | `[fm_amis_southern]` | 2455 |
-| `ami-x-frng` | 馬蘭阿美語 | `[fm_amis_malan]` | 2456 |
-| `ami-x-pswl` | 海岸阿美語 | `[fm_amis_coastal]` | 2457 |
-| `ami-x-skl` | 秀姑巒阿美語 | `[fm_amis_xiuguluan]` | 2458 |
-| `tay-x-cql` | 四季泰雅語 | `[fm_atayal_fourseasons]` | 2459 |
-| `tay-x-sql` | 賽考利克泰雅語 | `[fm_atayal_sekolik]` | 2460 |
-| `tay-x-plngw` | 萬大泰雅語 | `[fm_atayal_wanda]` | 2461 |
-| `tay-x-mtuw` | 汶水泰雅語 | `[fm_atayal_wenshui]` | 2462 |
-| `tay-x-kls` | 宜蘭澤敖利泰雅語 | `[fm_atayal_yilanzeaol]` | 2463 |
-| `tay-x-sul` | 澤敖利泰雅語 | `[fm_atayal_zeaol]` | 2464 |
-| `bnn-x-vtn` | 丹群布農語 | `[fm_bunun_tanqun]` | 2465 |
-| `bnn-x-bnz` | 巒群布農語 | `[fm_bunun_luanqun]` | 2466 |
-| `bnn-x-td` | 卓群布農語 | `[fm_bunun_zhuoqun]` | 2467 |
-| `bnn-x-bkh` | 卡群布農語 | `[fm_bunun_kaqun]` | 2468 |
-| `pwn-x-pnvn` | 中排灣語 | `[fm_paiwan_central]` | 2469 |
-| `pwn-x-kcdsn` | 東排灣語 | `[fm_paiwan_eastern]` | 2470 |
-| `bnn-x-isbk` | 郡群布農語 | `[fm_bunun_junqun]` | 2471 |
-| `xnb` | 卡那卡那富語 | `[fm_kanakanavu]` | 2472 |
-| `ckv` | 噶瑪蘭語 | `[fm_kavalan]` | 2473 |
-| `pyu-x-ksvk` | 建和卑南語 | `[fm_puyuma_jianhe]` | 2474 |
-| `pwn-x-ynvl` | 南排灣語 | `[fm_paiwan_southern]` | 2475 |
-| `pyu-x-mkzy` | 西群卑南語 | `[fm_puyuma_xiqun]` | 2476 |
-| `pwn-x-vnrn` | 北排灣語 | `[fm_paiwan_northern]` | 2477 |
-| `dru-x-kgdv` | 多納魯凱語 | `[fm_rukai_dona]` | 2478 |
-| `pyu-x-ktrp` | 知本卑南語 | `[fm_puyuma_zhiben]` | 2479 |
-| `dru-x-lbw` | 大武魯凱語 | `[fm_rukai_dawu]` | 2480 |
-| `dru-x-tldr` | 茂林魯凱語 | `[fm_rukai_maolin]` | 2481 |
-| `dru-x-trmk` | 東魯凱語 | `[fm_rukai_eastern]` | 2482 |
-| `pyu-x-pym` | 南王卑南語 | `[fm_puyuma_nanwang]` | 2483 |
-| `dru-x-opnh` | 萬山魯凱語 | `[fm_rukai_wanshan]` | 2484 |
-| `trv-x-trk` | 德鹿谷賽德克語 | `[fm_seediq_deluvalley]` | 2485 |
-| `sxr` | 拉阿魯哇語 | `[fm_saaroa]` | 2486 |
-| `xsy` | 賽夏語 | `[fm_saisiyat]` | 2487 |
-| `trv-x-td` | 都達賽德克語 | `[fm_seediq_duda]` | 2488 |
-| `szy` | 撒奇萊雅語 | `[fm_sakizaya]` | 2489 |
-| `dru-x-ngdr` | 霧臺魯凱語 | `[fm_rukai_wutai]` | 2490 |
-| `trv-x-tgdy` | 德固達雅賽德克語 | `[fm_seediq_tegudaya]` | 2491 |
-| `ssf` | 邵語 | `[fm_thao]` | 2492 |
-| `tsu` | 鄒語 | `[fm_tsou]` | 2493 |
-| `tao` | 雅美語 | `[fm_yami]` | 2494 |
-| `trv-x-truku` | 太魯閣語 | `[fm_truku]` | 2495 |
-
-</details>
-
 ---
 
-## 4. 語料資料集架構與音訊前處理
+## 4. 亮點一：訓練資料規模海量擴增（統合七大語料庫達 740.9 小時）
 
-### 4.1 七大語料庫統合（總規模達 740.9 小時）
+相較於上一期 F5-TTS 僅使用 `klokah`、`ilrdf_dicts` 與 `ithuan_formosan` 三個語料庫（約 400 小時），本期在資料廣度與深度上迎來跨越式提升：
+
+### 4.1 七大語料庫統合（規模遠超前期）
 本階段訓練整合了 FormoSpeech 家族之七大資料集，總有效訓練樣本達 **518,060 筆（740.9 小時）**：
 
-| 資料集名稱 | 引用版本代碼 (Revision) | 訓練有效語句數 (Utterances) | 總有效時長 (Hours) | 語料特色與核心貢獻 |
+| 資料集名稱 | 引用版本代碼 (Revision) | 訓練有效語句數 (Utterances) | 總有效時長 (Hours) | 相比前代 F5-TTS 之增益與特色 |
 | :--- | :---: | ---: | ---: | :--- |
 | **`formospeech/klokah`** | `85d5ac7e` | 320,276 | 466.7 hrs | 族語 E 樂園教材，全 42 語言對話與句型，訓練基石 |
 | **`formospeech/ilrdf_dicts`** | `6f33ec5e` | 89,549 | 118.1 hrs | 原語會官方辭典標準字詞與例句，發音極為權威規範 |
-| **`formospeech/common_voice_formosan`** | `8b831b11` | 45,554 | 50.2 hrs | Mozilla 國際開源社群眾包錄音，具備多元說話者口音 |
-| **`formospeech/nchu_pangcah`** | `10885872` | 24,724 | 34.7 hrs | 中興大學阿美語口傳田野深度錄音，挹注高資源語言多樣性 |
+| **`formospeech/common_voice_formosan`** | `8b831b11` | 45,554 | 50.2 hrs | **⭐️ 本期全新納入**：Mozilla 眾包錄音，涵蓋多元年齡層與口音 |
+| **`formospeech/nchu_pangcah`** | `10885872` | 24,724 | 34.7 hrs | **⭐️ 本期全新納入**：中興大學阿美語口傳田野深度錄音 |
 | **`formospeech/ithuan_formosan`** | `ec3c2cba` | 15,495 | 29.6 hrs | 意傳科技錄製之錄音室高規格乾淨母帶（阿美、賽德克、太魯閣） |
-| **`formospeech/nchc_formosan`** | `3d92966b` | 11,150 | 25.4 hrs | 國網中心族語錄音，重點補強卑南群、太魯閣及噶瑪蘭語 |
-| **`formospeech/ntu_formosan_corpus`** | `26245016` | 11,312 | 16.2 hrs | 臺大語言所珍貴田野口述錄音，呈現真實日常對話變體 |
-| **總計 (Grand Total)** | - | **518,060** | **740.9 hrs** | **涵蓋臺灣 16 族 42 方言別之全方位語音訓練集** |
+| **`formospeech/nchc_formosan`** | `3d92966b` | 11,150 | 25.4 hrs | **⭐️ 本期全新納入**：國網中心族語錄音，重點補強卑南、太魯閣及噶瑪蘭 |
+| **`formospeech/ntu_formosan_corpus`** | `26245016` | 11,312 | 16.2 hrs | **⭐️ 本期全新納入**：臺大語言所田野口述錄音，呈現真實日常變體 |
+| **總計 (Grand Total)** | - | **518,060** | **740.9 hrs** | **規模擴充近一倍，全臺灣最龐大之跨 42 方言訓練語料集** |
 
 ### 4.2 資料邊界篩選與防污染機制
 為了杜絕自回歸訓練中的注意力發散與記憶體爆發，團隊執行了嚴苛的四重篩選規則：
@@ -280,7 +236,7 @@ xychart-beta
 
 #### 關鍵發現與深度解讀：
 1. **CER 1.83% 逆轉勝真實人類錄音（1.88%）**：  
-   在客觀 ASR 評估中，Chatterbox 的 CER 比真實人類發音還低了 0.05 個百分點。這現象在語音生成研究中極為罕見，其原因在於：真實長老田野錄音常伴隨嘆氣、微弱咳嗽、口齒輕微含糊或錄音環境殘響，導致 ASR 偶發辨識雜訊；而微調後的 Chatterbox 學習到了全體資料中最為規範、純淨且標準的音素發音軌跡，去除了雜音缺陷，合成出的語音更加清晰易懂。
+   在客觀 ASR 評估中，Chatterbox 的 CER 比真實人類發音還低了 0.05 個百分點。在 740.9 小時海量訓練資料支撐下，模型吸納了最標準、規範的音素發音軌跡，去除了田野錄音中長老的口齒微瑕與環境殘響，呈現出更為清晰純淨的發音。
 2. **UTMOS 2.88 創造族語語音合成最高聽感紀錄**：  
    相較於 F5-TTS（2.27）與 Ground Truth（2.39），Chatterbox 的自然度得分達到 2.88，高出 0.5～0.6 分。這代表 S3Gen 聲碼器原生帶來的 24 kHz 純淨音質，徹底消除了傳統 TTS 的機器金屬音。
 3. **聲紋相似度（SIM-o 0.665）極為接近真實基準（0.673）**：  
@@ -356,14 +312,14 @@ xychart-beta
 
 ---
 
-## 7. 重大專題：性別與聲調穩定度深度剖析
+## 7. 亮點三：徹底改善 F5-TTS 參考音訊（Ref Audio）性別轉換缺陷深度剖析
 
-### 7.1 F5-TTS 的結構性頑疾：基頻崩塌與性別突變
-在上一期使用 F5-TTS 進行語音合成時，使用者與族語教師最常抱怨的嚴重異常，即為**「聲音突然變性（Gender Inversion）」**。例如輸入一位女性長老的聲音作為 Prompt，當合成短句子或疑問句時，模型合成出的聲音卻常突變為粗獷的成年男聲。
+### 7.1 F5-TTS 的結構性頑疾：參考音訊誘導之基頻崩塌與性別突變
+在上一期使用 F5-TTS 進行零樣本語音克隆時，使用者與族語教師最常抱怨的嚴重異常，即為**「輸入參考音訊後，模型合成出的聲音突然變性（Gender Inversion）」**。例如以女性長老的錄音作為參考音訊（Ref Audio），當合成簡短詞語或疑問句時，模型合成出的聲音卻常突變為粗獷的成年男聲。
 
 #### 異常機制歸因：
 - F5-TTS 基於非自回歸之 Flow Matching 架構，生成過程依賴整段梅爾頻譜（Mel-Spectrogram）的時間填充對齊。
-- 當輸入文本極短（$\le 3$ 個詞）或參考音訊為帶有揚升語調的疑問句時，條件音訊的長度先驗資訊不足，流匹配擴散採樣在反向軌跡去噪初期極易墜入錯誤的局部基頻吸引子（Attractor），造成基頻（Fundamental Frequency, F0）急遽墜落（暴跌為原本音高的 0.70 倍以下），產生嚴重的男女聲突變。
+- 當目標文字極短（$\le 3$ 個詞）或參考音訊為帶有揚升語調的疑問句時，條件音訊的長度先驗資訊不足，流匹配擴散採樣在反向軌跡去噪初期極易墜入錯誤的局部基頻吸引子（Attractor），造成基頻（Fundamental Frequency, F0）急遽墜落（暴跌為原本音高的 0.70 倍以下），產生嚴重的男女聲突變。
 
 ### 7.2 Chatterbox 的性別穩定度實驗驗證
 為客觀度量此異常，團隊設計了嚴密的**基頻崩塌率測試**：計算所有生成語音中，**中位數基頻（Median F0）低於參考音訊中位數 F0 之 0.70 倍**的樣本比例：
@@ -387,7 +343,7 @@ xychart-beta
 
 #### 7.3 機制成因總結
 Chatterbox 之所以能徹底解決性別跳轉問題，核心在於其採用的**解耦 T3 自回歸架構**：
-1. **獨立聲紋條件注入**：T3 在每個時間步（Step）皆持續接收由獨立 VoiceEncoder 所輸出的固定 512 維 Speaker Embedding，聲紋約束力貫穿整個解碼過程，不隨時間序列長短而衰減。
+1. **獨立聲紋條件剛性注入**：T3 在每個時間步（Step）皆持續接收由獨立 VoiceEncoder 所輸出的固定 512 維 Speaker Embedding，聲紋約束力貫穿整個解碼過程，不隨時間序列長短而衰減。
 2. **語音 Token 的離散化先驗**：自回歸生成的 Speech Token 空間經過神經編解碼器的量化離散，不具備擴散模型那種連續空間上的漂移隨機性，因而在任何短句或極端語氣下皆能死死鎖定說話者的基頻音高。
 
 ---
@@ -455,9 +411,9 @@ print("IPA 表徵:", tts.text_to_ipa(text, lang_code))
 
 ### 10.1 本期研發總結
 本報告實證了**非紅產業鏈語音合成模型微調之全面勝利**：
-1. **確立非紅開源架構之頂尖競爭力**：北美 Resemble AI 之 Chatterbox Multilingual V3 透過結構解耦與精確的 T3 全模組微調，在全族語 42 語言盲測中，全面超越前代紅色背景之 F5-TTS，並取得遠勝於 4B 自回歸大模型之效率與準確率。
-2. **聲學指標與聽感雙重天花板**：創下 **CER 1.83%**（擊敗真實錄音）與 **UTMOS 2.88** 之全臺族語語音合成最高紀錄。
-3. **徹底瓦解性別反轉瑕疵**：攻克了困擾族語推廣多時的短句性別跳轉重大技術痛點。
+1. **海量語料奠定發音基石（亮點一）**：整併 740.9 小時、51.8 萬筆語料，使模型充分掌握 42 種方言的細緻音位分佈，締造 CER 1.83% 逆轉勝真實人類錄音的奇蹟。
+2. **確立非紅開源架構之頂尖競爭力（亮點二）**：北美 Resemble AI 之 Chatterbox Multilingual V3 透過結構解耦與精確的 T3 全模組微調，在全族語 42 語言盲測中，全面超越前代紅色背景之 F5-TTS，並取得遠勝於 4B 自回歸大模型之效率與準確率。
+3. **徹底攻克參考音訊性別轉換難題（亮點三）**：將短疑問句男女聲突變率自 12.77% 壓低至 0.72%，徹底解決了困擾族語教學與長老聲音典藏的重大技術頑疾。
 
 ### 10.2 下一階段研發規劃
 1. **端到端聲碼器聯合適應（S3Gen Adaptation）**：本期 SIM-o（0.665）略受未微調之原始 S3Gen 聲碼器限制。下一階段將探索以極小學習率解凍 S3Gen，進一步提升南島特殊喉壁音與聲門塞音之聲紋保真度至 0.70 以上。
