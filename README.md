@@ -79,10 +79,10 @@
 
 | 語料庫來源 | 中文名稱說明 | 涵蓋語言數 | 總樣本數 (筆) | 總時長 (小時) | 訓練集 (筆 / 時長) | 獨立評估集 (筆 / 時長) | 詳細統計報告 |
 | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :--- |
-| **`klokah`** | **族語 E 樂園** | 42 | 490,726 | 603.77 | 466,204 / 573.50 hrs | 24,522 / 30.27 hrs | [stats-klokah.md](data/2026-09-08/stats-klokah.md) |
-| **`ilrdf_dicts`** | **族語辭典例句** | 16 | 97,785 | 129.42 | 97,785 / 129.42 hrs | 0 / 0.00 hrs | [stats-ilrdf_dicts.md](data/2026-09-08/stats-ilrdf_dicts.md) |
-| **`ithuan_formosan`** | **意傳族語語料** | 3 | 14,902 | 28.72 | 14,843 / 28.60 hrs | 59 / 0.11 hrs | [stats-ithuan_formosan.md](data/2026-09-08/stats-ithuan_formosan.md) |
-| **`ntu_formosan_corpus`** | **臺大族語語料庫** | 10 | 14,130 | 17.48 | 14,130 / 17.48 hrs | 0 / 0.00 hrs | [stats-ntu_formosan_corpus.md](data/2026-09-08/stats-ntu_formosan_corpus.md) |
+| **`klokah`** | **族語E樂園** | 42 | 490,726 | 603.77 | 466,204 / 573.50 hrs | 24,522 / 30.27 hrs | [stats-klokah.md](data/2026-09-08/stats-klokah.md) |
+| **`ilrdf_dicts`** | **原民會族語辭典** | 16 | 97,785 | 129.42 | 97,785 / 129.42 hrs | 0 / 0.00 hrs | [stats-ilrdf_dicts.md](data/2026-09-08/stats-ilrdf_dicts.md) |
+| **`ithuan_formosan`** | **意傳族語語音語料** | 3 | 14,902 | 28.72 | 14,843 / 28.60 hrs | 59 / 0.11 hrs | [stats-ithuan_formosan.md](data/2026-09-08/stats-ithuan_formosan.md) |
+| **`ntu_formosan_corpus`** | **臺灣大學族語語料庫** | 10 | 14,130 | 17.48 | 14,130 / 17.48 hrs | 0 / 0.00 hrs | [stats-ntu_formosan_corpus.md](data/2026-09-08/stats-ntu_formosan_corpus.md) |
 | **`nchc_formosan`** | **國網中心族語語料** | 6 | 18,120 | 32.19 | 18,120 / 32.19 hrs | 0 / 0.00 hrs | [stats-nchc_formosan.md](data/2026-09-08/stats-nchc_formosan.md) |
 | **聲學總計 (ASR/TTS)** | — | **42** | **635,663** | **811.58** | **611,082 / 781.19 hrs** | **24,581 / 30.38 hrs** | **全臺最完整族語聲學資料庫** |
 | **機器翻譯總計 (MT v3)** | 包含聖經、文本等 10 資料庫 | **42** | **1,202,906** | — | **雙向對齊訓練句對** | **15,450 句 / 1,270 段** | [v3 MT 報告](reports/2026-10-30/mt_technical_report.md) |
@@ -176,7 +176,7 @@
 - **訓練框架與顯存調控**：在 4 張 24 GB VRAM 之 NVIDIA RTX A5000 上採用 **LoRA 輕量微調**，設定 Effective Batch Size = 32，單 Epoch 耗時約 7 小時（約 6,000 steps）。
 
 ### 2. 客觀聲學指標對照
-自 `klokah`（族語E樂園）與 `ithuan_formosan`（愛臺灣族語語料）獨立評估集中抽樣（全 42 語言，每語言 30 筆，共 1,260 筆測試樣本），以上一期 Baseline ASR 模型轉錄評估錯誤率，並以 WavLM-Large 抽取聲紋比對說話者相似度（Speaker Sim）：
+自 `klokah`（族語E樂園）與 `ithuan_formosan`（意傳族語語音語料）獨立評估集中抽樣（全 42 語言，每語言 30 筆，共 1,260 筆測試樣本），以上一期 Baseline ASR 模型轉錄評估錯誤率，並以 WavLM-Large 抽取聲紋比對說話者相似度（Speaker Sim）：
 
 | 評估系統 (System) | 模型架構類型 | 訓練狀態 | WER% | CER% | 說話者相似度 (Speaker Sim) |
 | :--- | :---: | :---: | :---: | :---: | :---: |
