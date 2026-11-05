@@ -86,6 +86,7 @@ v3 整合 10 組核心平行語料庫，全數僅使用 `train` split，並建�
 ### 3.3 Tokenizer 與語言標記設計 (`build_tokenizer.py`)
 - **Byte-Fallback 實作**：於詞表後方擴充 256 個 Byte Token，保留原始 NLLB token ID 排序。當遇到未登錄字符時直接退化至 Byte 序列表示，達成 **`<unk>` 產生率 0.00%**。
 - **42 語言精細控制標記**：擴充語言級別 Token（如 `ami_Coas`、`pwn_Cent`），使解碼器能依據特定語言之音韻與語法結構進行受控翻譯。
+- **新增 Token 的初始化**：新增的語言 Token 與 Byte Token 採用 transformers 預設的 mean resizing 初始化（依既有 embedding 的平均與共變異數抽樣）。另測試將語言 Token 改從 `tgl_Latn`（他加祿語）或 `ind_Latn`（印尼語）複製初始化，三者在完整評測集上差距皆小於 0.3 chrF，各 epoch 的 eval loss 曲線幾乎重合，故維持預設。
 
 ### 3.4 訓練參數與平行化調度
 - **硬體環境**：4 × NVIDIA RTX A5000 (24GB VRAM)。
